@@ -61,3 +61,5 @@
     color: #b00020;
     margin: 0 0 14px;
 }
+
+@media (max-width: 480px) { .login-page, .login-box { padding: 16px; } }

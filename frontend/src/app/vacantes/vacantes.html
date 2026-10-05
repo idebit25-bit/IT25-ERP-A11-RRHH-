@@ -1,229 +1,266 @@
 <div class="container">
+  <header class="page-header">
+    <div>
+      <h2>Administración de vacantes</h2>
+      <p>Crea oportunidades y administra las publicaciones de tu equipo.</p>
+    </div>
+    <span class="vacancy-count">{{ informacion.length }} vacantes</span>
+  </header>
+  <details class="editor-panel" [open]="formularioAbierto" (toggle)="sincronizarFormulario($event)">
+    <summary>{{ modoEdicion ? 'Editar vacante: ' + puesto : 'Crear nueva vacante' }}</summary>
 
-<h2>Genera/Edita Vacantes - RRHH</h2>
-<h3>Genera vacante</h3>
+    <div class="table_input vacancy-form">
+      <label>
+        Puesto
+        <input type="text" placeholder="Ingrese el puesto..." [(ngModel)]="puesto" />
+      </label>
 
-<div class="table_input vacancy-form">
-  <label>
-    Puesto
-    <input type="text" placeholder="Ingrese el puesto..." [(ngModel)]="puesto">
-  </label>
+      <label>
+        Departamento
+        <input type="text" placeholder="Ingrese el departamento..." [(ngModel)]="departamento" />
+      </label>
 
-  <label>
-    Departamento
-    <input type="text" placeholder="Ingrese el departamento..." [(ngModel)]="departamento">
-  </label>
+      <label>
+        Horario
+        <input type="text" placeholder="Ingrese el horario..." [(ngModel)]="horario" />
+      </label>
 
-  <label>
-    Horario
-    <input type="text" placeholder="Ingrese el horario..." [(ngModel)]="horario">
-  </label>
+      <label>
+        Salario
+        <input
+          type="text"
+          inputmode="decimal"
+          placeholder="Ingrese el salario..."
+          [ngModel]="salario"
+          (ngModelChange)="formatearSalario($event)"
+        />
+      </label>
 
-  <label>
-    Salario
-    <input
-      type="text"
-      inputmode="decimal"
-      placeholder="Ingrese el salario..."
-      [ngModel]="salario"
-      (ngModelChange)="formatearSalario($event)">
-  </label>
+      <label>
+        Imagen de referencia
+        <input
+          #imagenInput
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          (change)="seleccionarImagen($event)"
+        />
+        <small *ngIf="modoEdicion && img"> Imagen actual: {{ img }} </small>
+      </label>
 
-  <label>
-    Imagen de referencia
-    <input
-      #imagenInput
-      type="file"
-      accept="image/png,image/jpeg,image/webp"
-      (change)="seleccionarImagen($event)">
-    <small *ngIf="modoEdicion && img">
-      Imagen actual: {{ img }}
-    </small>
-  </label>
+      <label class="wide-field">
+        Descripcion breve
+        <textarea
+          rows="4"
+          [attr.maxlength]="limiteDescripcionBreve + 1"
+          placeholder="Ingrese la descripcion breve..."
+          [ngModel]="descripcion_breve"
+          (ngModelChange)="validarDescripcionBreve($event)"
+        ></textarea>
+        <small
+          class="character-count"
+          [class.limit-exceeded]="descripcion_breve.length > limiteDescripcionBreve"
+        >
+          {{ descripcion_breve.length }} / {{ limiteDescripcionBreve }} caracteres
+        </small>
+      </label>
 
-  <label class="wide-field">
-    Descripcion breve
-    <textarea
-      rows="4"
-      [attr.maxlength]="limiteDescripcionBreve + 1"
-      placeholder="Ingrese la descripcion breve..."
-      [ngModel]="descripcion_breve"
-      (ngModelChange)="validarDescripcionBreve($event)">
-    </textarea>
-    <small
-      class="character-count"
-      [class.limit-exceeded]="descripcion_breve.length > limiteDescripcionBreve">
-      {{ descripcion_breve.length }} / {{ limiteDescripcionBreve }} caracteres
-    </small>
-  </label>
+      <label class="wide-field">
+        Descripcion completa
+        <textarea
+          rows="7"
+          placeholder="Ingrese la descripcion completa..."
+          [(ngModel)]="descripcion"
+        ></textarea>
+      </label>
 
-  <label class="wide-field">
-    Descripcion completa
-    <textarea
-      rows="7"
-      placeholder="Ingrese la descripcion completa..."
-      [(ngModel)]="descripcion">
-    </textarea>
-  </label>
+      <div class="wide-field requirements-box">
+        <div class="requirements-header">
+          <label>Requisitos</label>
+          <button class="btn-submit" type="button" (click)="agregarRequisito()">+ Agregar</button>
+        </div>
 
-  <div class="wide-field requirements-box">
-    <div class="requirements-header">
-      <label>Requisitos</label>
+        <div
+          class="requirement-row"
+          *ngFor="let requisito of requisitos; let i = index; trackBy: trackByIndex"
+        >
+          <input
+            type="text"
+            placeholder="Ingrese un requisito..."
+            [(ngModel)]="requisitos[i]"
+            [name]="'requisito' + i"
+          />
+          <button class="btn-delete" type="button" (click)="eliminarRequisito(i)">Eliminar</button>
+        </div>
+      </div>
+
+      <button class="btn-submit form-action" (click)="guardarVacante(imagenInput)">
+        {{ modoEdicion ? 'Guardar cambios' : 'Agregar vacante' }}
+      </button>
       <button
-        class="btn-submit"
+        class="btn-toggle form-action"
         type="button"
-        (click)="agregarRequisito()">
-        + Agregar
+        *ngIf="modoEdicion"
+        (click)="limpiarFormulario(imagenInput)"
+      >
+        Cancelar edición
       </button>
     </div>
+  </details>
+  <h3 class="list-title">Vacantes registradas</h3>
+  <p class="list-help">Consulta los detalles de cada publicación con «Ver más».</p>
 
-    <div
-      class="requirement-row"
-      *ngFor="let requisito of requisitos; let i = index; trackBy: trackByIndex">
-      <input
-        type="text"
-        placeholder="Ingrese un requisito..."
-        [(ngModel)]="requisitos[i]"
-        [name]="'requisito' + i">
-      <button
-        class="btn-delete"
-        type="button"
-        (click)="eliminarRequisito(i)">
-        Eliminar
-      </button>
+  <div class="table-edit">
+    <table>
+      <thead class="table-top">
+        <tr>
+          <th class="b" scope="col">Vacante</th>
+          <th class="b" scope="col">Descripción</th>
+          <th class="b" scope="col">Requisitos</th>
+          <th class="b" scope="col">Salario</th>
+          <th class="b" scope="col">Estado</th>
+          <th class="b" scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let vacante of informacion">
+          <td>
+            <div class="vacancy-identity">
+              <img
+                class="vacancy-thumb"
+                *ngIf="vacante.img_url"
+                [src]="vacante.img_url"
+                alt=""
+                loading="lazy"
+              />
+              <div>
+                <strong>{{ vacante.puesto }}</strong
+                ><span>{{ vacante.departamento || 'Sin departamento' }}</span
+                ><span>{{ vacante.horario || 'Horario no especificado' }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="text-preview-cell">
+            <p class="text-preview">
+              {{ textoVisible(vacante.descripcion_breve || vacante.descripcion) }}
+            </p>
+            <button
+              class="btn-link"
+              type="button"
+              [attr.aria-label]="'Ver más sobre ' + vacante.puesto"
+              (click)="abrirDetalle(vacante, 'descripcion')"
+            >
+              Ver más
+            </button>
+          </td>
+          <td class="text-preview-cell">
+            <p class="text-preview">
+              {{
+                textoVisible(textoRequisitos(vacante.requisitos)) || 'Sin requisitos registrados'
+              }}
+            </p>
+            <button
+              class="btn-link"
+              type="button"
+              [attr.aria-label]="'Ver requisitos de ' + vacante.puesto"
+              (click)="abrirDetalle(vacante, 'requisitos')"
+            >
+              Ver más
+            </button>
+          </td>
+          <td class="salary-cell">{{ vacante.salario | moneyFormat }}</td>
+          <td>
+            <span class="status-badge" [class.inactive]="!vacante.estado">{{
+              vacante.estado ? 'Activa' : 'Inactiva'
+            }}</span>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-edit" type="button" (click)="editarVacante(vacante)">
+                Editar
+              </button>
+              <button class="btn-delete" type="button" (click)="abrirModalEliminar(vacante)">
+                Borrar
+              </button>
+              <button class="btn-toggle" type="button" (click)="cambiarEstado(vacante.id)">
+                {{ vacante.estado ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="informacion.length === 0">
+          <td colspan="6" class="empty-list">No hay vacantes registradas.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <dialog
+    #detalleDialog
+    class="detail-card"
+    aria-labelledby="detail-title"
+    (close)="detalleVacante = null"
+  >
+    <ng-container *ngIf="detalleVacante as vacante">
+      <header class="detail-header">
+        <div>
+          <p>
+            {{
+              campoDetalle === 'requisitos' ? 'Requisitos de la vacante' : 'Detalle de la vacante'
+            }}
+          </p>
+          <h2 id="detail-title">{{ vacante.puesto }}</h2>
+        </div>
+        <button class="btn-delete" type="button" autofocus (click)="detalleDialog.close()">
+          Cerrar
+        </button>
+      </header>
+      <dl class="detail-meta">
+        <div>
+          <dt>Departamento</dt>
+          <dd>{{ vacante.departamento || 'No especificado' }}</dd>
+        </div>
+        <div>
+          <dt>Horario</dt>
+          <dd>{{ vacante.horario || 'No especificado' }}</dd>
+        </div>
+        <div>
+          <dt>Salario</dt>
+          <dd>{{ vacante.salario | moneyFormat }}</dd>
+        </div>
+        <div>
+          <dt>Estado</dt>
+          <dd>{{ vacante.estado ? 'Activa' : 'Inactiva' }}</dd>
+        </div>
+      </dl>
+      <section *ngIf="campoDetalle === 'descripcion'">
+        <h3>Descripción breve</h3>
+        <p class="detail-text">{{ vacante.descripcion_breve || 'Sin descripción breve' }}</p>
+        <h3>Descripción completa</h3>
+        <p class="detail-text">{{ vacante.descripcion || 'Sin descripción registrada' }}</p>
+      </section>
+      <section *ngIf="campoDetalle === 'requisitos'">
+        <h3>Requisitos</h3>
+        <ul class="detail-requirements">
+          <li *ngFor="let requisito of separarRequisitos(vacante.requisitos)">
+            {{ requisito || 'Sin requisitos registrados' }}
+          </li>
+        </ul>
+      </section>
+    </ng-container>
+  </dialog>
+
+  <div class="overlay" *ngIf="mostrarModal">
+    <div class="modal-box">
+      <h2>Seguro que quieres borrar:</h2>
+
+      <p>
+        Nombre de la vacante:
+        {{ vacanteSeleccionada?.puesto }}
+      </p>
+
+      <button class="btn-form" (click)="cerrarModal()">Cancelar</button>
+
+      <button class="btn-form" (click)="eliminarVacante(vacanteSeleccionada.id)">Borrar</button>
     </div>
   </div>
-
-  <button class="btn-submit form-action" (click)="guardarVacante(imagenInput)">
-    {{ modoEdicion ? 'Guardar cambios' : 'Agregar vacante'}}
-  </button>
-</div>
-
-<h3>Edita vacantes</h3>
-
-<div class="table-edit">
-  <table>
-    <thead class="table-top">
-      <tr>
-        <th class="b">Puesto</th>
-        <th class="b">Departamento</th>
-        <th class="b">Entrada</th>
-        <th class="b">Descripcion</th>
-        <th class="b">Horario</th>
-        <th class="b">Requisitos</th>
-        <th class="b">Salario</th>
-        <th class="b">Imagen</th>
-        <th class="b">Editar</th>
-        <th class="b">Borrar</th>
-        <th class="b">Activar/Desactivar</th>
-      </tr>
-    </thead>
-
-    <tbody>
-
-      <tr *ngFor="let vacante of informacion">
-
-        <td>{{ vacante.puesto }}</td>
-
-        <td>{{ vacante.departamento || 'Sin departamento' }}</td>
-
-        <td>{{ vacante.descripcion_breve }}</td>
-
-        <td class="text-preview-cell">
-          <p class="text-preview">
-            {{ textoVisible(vacante.descripcion, vacante, 'descripcion') }}
-          </p>
-          <button
-            *ngIf="necesitaExpandir(vacante.descripcion)"
-            class="btn-link"
-            type="button"
-            (click)="alternarCampo(vacante, 'descripcion')">
-            {{ campoExpandido(vacante, 'descripcion') ? 'Ver menos' : 'Ver mas' }}
-          </button>
-        </td>
-
-        <td>{{ vacante.horario }}</td>
-
-        <td class="text-preview-cell">
-          <p class="text-preview requirements-text">
-            {{ textoVisible(textoRequisitos(vacante.requisitos), vacante, 'requisitos') }}
-          </p>
-          <button
-            *ngIf="necesitaExpandir(textoRequisitos(vacante.requisitos))"
-            class="btn-link"
-            type="button"
-            (click)="alternarCampo(vacante, 'requisitos')">
-            {{ campoExpandido(vacante, 'requisitos') ? 'Ver menos' : 'Ver mas' }}
-          </button>
-        </td>
-
-        <td>{{ vacante.salario | moneyFormat }}</td>
-
-        <td>
-          <img
-            class="vacancy-thumb"
-            *ngIf="vacante.img_url"
-            [src]="vacante.img_url"
-            [alt]="vacante.puesto">
-        </td>
-
-        <td>
-          <button
-            class="btn-edit"
-            (click)="editarVacante(vacante)">
-            Editar
-          </button>
-        </td>
-
-        <td>
-          <button
-            class="btn-delete"
-            (click)="abrirModalEliminar(vacante)">
-            Borrar
-          </button>
-        </td>
-
-        <td>
-          <button
-            class="btn-edit"
-            (click)="cambiarEstado(vacante.id)">
-            {{ vacante.estado ? 'Desactivar' : 'Activar' }}
-          </button>
-        </td>
-
-      </tr>
-
-    </tbody>
-
-  </table>
-
-</div>
-
-<div class="overlay" *ngIf="mostrarModal">
-
-  <div class="modal-box">
-
-    <h2>Seguro que quieres borrar:</h2>
-
-    <p>
-      Nombre de la vacante:
-      {{ vacanteSeleccionada?.puesto }}
-    </p>
-
-    <button
-      class="btn-form"
-      (click)="cerrarModal()">
-      Cancelar
-    </button>
-
-    <button
-      class="btn-form"
-      (click)="eliminarVacante(vacanteSeleccionada.id)">
-      Borrar
-    </button>
-
-  </div>
-
-</div>
-
 </div>

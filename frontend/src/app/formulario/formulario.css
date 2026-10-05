@@ -210,3 +210,10 @@ button:disabled:hover {
     padding-left: 25px;
     box-sizing: border-box;
 }
+@media (max-width: 480px) {
+    fieldset { margin: 0 16px 32px; padding: 16px; }
+    .form-errors, .form-notice { margin: 0 16px 24px; }
+    button { width: calc(100% - 32px); height: auto; min-height: 44px; }
+    .option-add, .option-remove { min-width: 0; max-width: 100%; height: auto; min-height: 44px; padding: 10px 14px; line-height: 1.4; }
+    .option-remove { margin-left: 0; }
+}

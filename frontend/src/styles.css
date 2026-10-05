@@ -9,3 +9,8 @@ html, body {
     padding: 0;
     background: #F3F5F6;
 }
+/* Keep content flexible without clipping page controls. */
+app-root, app-navbar, router-outlet + * { display: block; min-width: 0; }
+h1, h2, h3, h4, p, label, legend { overflow-wrap: anywhere; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+fieldset { min-inline-size: 0; }

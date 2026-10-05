@@ -22,10 +22,12 @@
 
             <h2 class="info-title">Vacantes disponibles</h2>
 
-            <div class="card" *ngFor="let vacante of informacion">
+            <div class="vacancy-grid">
+            <article class="card" *ngFor="let vacante of informacion">
                 <img
                     class="card-img"
                     [src]="vacante.img_url"
+                    loading="lazy"
                     [alt]="vacante.puesto">
                 <div class="card-info">
                     <h3 class="job-name"> {{ vacante.puesto }} </h3>
@@ -35,10 +37,11 @@
                         *ngIf="vacanteNoAceptada(vacante)">
                         {{ obtenerMensajeNoAceptada(vacante) }}
                     </p>
-                    <button class="btn-form" (click)="abrirModal(vacante)">
-                    Mas info
+                    <button class="btn-form" type="button" [attr.aria-label]="'Más información sobre ' + vacante.puesto" (click)="abrirModal(vacante)">
+                    Más información
                 </button>
                 </div>
+            </article>
             </div>
 
 <div class="overlay" *ngIf="mostrarModal">
