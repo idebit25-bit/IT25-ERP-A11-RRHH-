@@ -10,19 +10,58 @@
     <summary>{{ modoEdicion ? 'Editar vacante: ' + puesto : 'Crear nueva vacante' }}</summary>
 
     <div class="table_input vacancy-form">
+      <p class="wide-field">
+        Todos los campos son obligatorios. Al editar puedes conservar la imagen actual.
+      </p>
+      <div class="wide-field validation-summary" role="alert" *ngIf="erroresFormulario.length">
+        <strong>Revisa los siguientes campos antes de guardar:</strong>
+        <ul>
+          <li *ngFor="let error of erroresFormulario">{{ error }}</li>
+        </ul>
+      </div>
       <label>
         Puesto
-        <input type="text" placeholder="Ingrese el puesto..." [(ngModel)]="puesto" />
+        <input
+          type="text"
+          placeholder="Ingrese el puesto..."
+          [(ngModel)]="puesto"
+          [attr.aria-invalid]="errorCampo('puesto') ? 'true' : null"
+          [attr.aria-describedby]="errorCampo('puesto') ? 'error-puesto' : null"
+          required
+        />
+        <small class="field-error" id="error-puesto" *ngIf="errorCampo('puesto')">{{
+          errorCampo('puesto')
+        }}</small>
       </label>
 
       <label>
         Departamento
-        <input type="text" placeholder="Ingrese el departamento..." [(ngModel)]="departamento" />
+        <input
+          type="text"
+          placeholder="Ingrese el departamento..."
+          [(ngModel)]="departamento"
+          [attr.aria-invalid]="errorCampo('departamento') ? 'true' : null"
+          [attr.aria-describedby]="errorCampo('departamento') ? 'error-departamento' : null"
+          required
+        />
+        <small class="field-error" id="error-departamento" *ngIf="errorCampo('departamento')">{{
+          errorCampo('departamento')
+        }}</small>
       </label>
 
       <label>
         Horario
-        <input type="text" placeholder="Ingrese el horario..." [(ngModel)]="horario" />
+        <input
+          type="text"
+          placeholder="Ingrese el horario..."
+          [(ngModel)]="horario"
+          [attr.aria-invalid]="errorCampo('horario') ? 'true' : null"
+          [attr.aria-describedby]="errorCampo('horario') ? 'error-horario' : null"
+          required
+        />
+        <small class="field-error" id="error-horario" *ngIf="errorCampo('horario')">{{
+          errorCampo('horario')
+        }}</small>
       </label>
 
       <label>
@@ -33,7 +72,13 @@
           placeholder="Ingrese el salario..."
           [ngModel]="salario"
           (ngModelChange)="formatearSalario($event)"
+          [attr.aria-invalid]="errorCampo('salario') ? 'true' : null"
+          [attr.aria-describedby]="errorCampo('salario') ? 'error-salario' : null"
+          required
         />
+        <small class="field-error" id="error-salario" *ngIf="errorCampo('salario')">{{
+          errorCampo('salario')
+        }}</small>
       </label>
 
       <label>
@@ -43,7 +88,13 @@
           type="file"
           accept="image/png,image/jpeg,image/webp"
           (change)="seleccionarImagen($event)"
+          [attr.aria-invalid]="errorCampo('img') ? 'true' : null"
+          [attr.aria-describedby]="errorCampo('img') ? 'error-img' : null"
+          [required]="!modoEdicion || !img"
         />
+        <small class="field-error" id="error-img" *ngIf="errorCampo('img')">{{
+          errorCampo('img')
+        }}</small>
         <small *ngIf="modoEdicion && img"> Imagen actual: {{ img }} </small>
       </label>
 
@@ -55,7 +106,18 @@
           placeholder="Ingrese la descripcion breve..."
           [ngModel]="descripcion_breve"
           (ngModelChange)="validarDescripcionBreve($event)"
+          [attr.aria-invalid]="errorCampo('descripcion_breve') ? 'true' : null"
+          [attr.aria-describedby]="
+            errorCampo('descripcion_breve') ? 'error-descripcion_breve' : null
+          "
+          required
         ></textarea>
+        <small
+          class="field-error"
+          id="error-descripcion_breve"
+          *ngIf="errorCampo('descripcion_breve')"
+          >{{ errorCampo('descripcion_breve') }}</small
+        >
         <small
           class="character-count"
           [class.limit-exceeded]="descripcion_breve.length > limiteDescripcionBreve"
@@ -70,7 +132,13 @@
           rows="7"
           placeholder="Ingrese la descripcion completa..."
           [(ngModel)]="descripcion"
+          [attr.aria-invalid]="errorCampo('descripcion') ? 'true' : null"
+          [attr.aria-describedby]="errorCampo('descripcion') ? 'error-descripcion' : null"
+          required
         ></textarea>
+        <small class="field-error" id="error-descripcion" *ngIf="errorCampo('descripcion')">{{
+          errorCampo('descripcion')
+        }}</small>
       </label>
 
       <div class="wide-field requirements-box">
@@ -88,13 +156,28 @@
             placeholder="Ingrese un requisito..."
             [(ngModel)]="requisitos[i]"
             [name]="'requisito' + i"
+            required
+            [attr.aria-label]="'Requisito ' + (i + 1)"
+            [attr.aria-invalid]="intentoGuardar && !requisitos[i].trim() ? 'true' : null"
+            [attr.aria-describedby]="errorCampo('requisitos') ? 'error-requisitos' : null"
           />
           <button class="btn-delete" type="button" (click)="eliminarRequisito(i)">Eliminar</button>
         </div>
       </div>
 
-      <button class="btn-submit form-action" (click)="guardarVacante(imagenInput)">
-        {{ modoEdicion ? 'Guardar cambios' : 'Agregar vacante' }}
+      <small
+        class="field-error wide-field"
+        id="error-requisitos"
+        *ngIf="errorCampo('requisitos')"
+        >{{ errorCampo('requisitos') }}</small
+      >
+      <button
+        class="btn-submit form-action"
+        type="button"
+        [disabled]="guardando"
+        (click)="guardarVacante(imagenInput)"
+      >
+        {{ guardando ? 'Guardando...' : modoEdicion ? 'Guardar cambios' : 'Agregar vacante' }}
       </button>
       <button
         class="btn-toggle form-action"

@@ -40,9 +40,7 @@ public function show($id)
 
     public function store(Request $request)
     {
-        $request->validate([
-            'img' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-        ]);
+        $this->validarVacante($request, true);
 
         $info = Vacancy::create([
 
@@ -66,11 +64,8 @@ public function show($id)
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'img' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-        ]);
-
         $vacante = Vacancy::findOrFail($id);
+        $this->validarVacante($request, !$vacante->img);
 
         $datos = [
             'puesto' => $request->puesto,
@@ -144,6 +139,36 @@ public function imagen($id)
     return response()->file(
         Storage::disk('public')->path($vacante->img)
     );
+}
+
+private function validarVacante(Request $request, bool $requiereImagen): void
+{
+    $request->validate([
+        'puesto' => 'required|string|max:255',
+        'departamento' => 'required|string|max:255',
+        'horario' => 'required|string|max:255',
+        'descripcion_breve' => 'required|string|max:255',
+        'descripcion' => 'required|string',
+        'requisitos' => 'required|string',
+        'salario' => ['required', 'string', 'max:255', function ($attribute, $value, $fail) {
+            $importe = str_replace(['$', ',', ' '], '', $value);
+            if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $importe) || (float) $importe <= 0) {
+                $fail('Ingresa un salario mayor que cero con hasta dos decimales.');
+            }
+        }],
+        'img' => ($requiereImagen ? 'required' : 'nullable') . '|image|mimes:jpg,jpeg,png,webp|max:5120',
+    ], [
+        'required' => 'Completa el campo :attribute.',
+        'string' => 'El campo :attribute debe contener texto.',
+        'max.string' => 'El campo :attribute no puede superar :max caracteres.',
+        'img.image' => 'El archivo seleccionado debe ser una imagen.',
+        'img.mimes' => 'Selecciona una imagen PNG, JPG o WebP.',
+        'img.max' => 'La imagen no debe superar 5 MB.',
+    ], [
+        'descripcion_breve' => 'descripción breve',
+        'descripcion' => 'descripción completa',
+        'img' => 'imagen de referencia',
+    ]);
 }
 
 private function agregarUrlImagen(Vacancy $vacante)

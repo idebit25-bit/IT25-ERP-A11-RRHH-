@@ -21,6 +21,66 @@ import { formatMoney, formatMoneyInput, MoneyFormatPipe } from '../shared/money-
 })
 export class Vacantes {
   mostrarModal = false;
+  intentoGuardar = false;
+  guardando = false;
+  erroresServidor: string[] = [];
+
+  erroresValidacion(): Record<string, string> {
+    const errores: Record<string, string> = {};
+    const campos: Record<string, string> = {
+      puesto: this.puesto,
+      departamento: this.departamento,
+      horario: this.horario,
+      descripcion_breve: this.descripcion_breve,
+      descripcion: this.descripcion,
+    };
+    const nombres: Record<string, string> = {
+      puesto: 'el puesto',
+      departamento: 'el departamento',
+      horario: 'el horario',
+      descripcion_breve: 'la descripción breve',
+      descripcion: 'la descripción completa',
+    };
+    for (const [campo, valor] of Object.entries(campos)) {
+      if (!valor?.trim()) errores[campo] = 'Completa ' + nombres[campo] + '.';
+    }
+    for (const campo of ['puesto', 'departamento', 'horario', 'descripcion_breve']) {
+      if (campos[campo]?.length > 255)
+        errores[campo] = 'Este campo no puede superar 255 caracteres.';
+    }
+    const importe = Number(this.salario.replace(/[\s,$]/g, ''));
+    if (!this.salario.trim() || !Number.isFinite(importe) || importe <= 0)
+      errores['salario'] = 'Ingresa un salario mayor que cero.';
+    if (!this.requisitos.length || this.requisitos.some((requisito) => !requisito.trim()))
+      errores['requisitos'] =
+        'Completa todos los requisitos agregados o elimina los que no necesites.';
+    if (!this.imagen && !(this.modoEdicion && this.img))
+      errores['img'] = 'Selecciona una imagen de referencia.';
+    if (this.imagen && !['image/png', 'image/jpeg', 'image/webp'].includes(this.imagen.type))
+      errores['img'] = 'Selecciona una imagen PNG, JPG o WebP.';
+    if (this.imagen && this.imagen.size > 5 * 1024 * 1024)
+      errores['img'] = 'La imagen no debe superar 5 MB.';
+    return errores;
+  }
+
+  errorCampo(campo: string): string {
+    return this.intentoGuardar ? this.erroresValidacion()[campo] || '' : '';
+  }
+
+  get erroresFormulario(): string[] {
+    return this.intentoGuardar
+      ? [...Object.values(this.erroresValidacion()), ...this.erroresServidor]
+      : [];
+  }
+
+  private errorGuardado(error: any) {
+    this.guardando = false;
+    this.erroresServidor =
+      error.status === 422 && error.error?.errors
+        ? (Object.values(error.error.errors).flat() as string[])
+        : ['No se pudo guardar la vacante. Revisa tu conexión e intenta nuevamente.'];
+    this.changeDetector.markForCheck();
+  }
   readonly limiteDescripcionBreve = 255;
   readonly limiteTextoTabla = 100;
   formularioAbierto = false;
@@ -99,14 +159,17 @@ export class Vacantes {
   }
 
   guardarVacante(imagenInput?: HTMLInputElement) {
-    if (this.descripcion_breve.length > this.limiteDescripcionBreve) {
-      alert(
-        `La descripcion breve no puede superar los ${this.limiteDescripcionBreve} caracteres permitidos.`,
-      );
+    if (this.guardando) return;
+    this.intentoGuardar = true;
+    this.erroresServidor = [];
+    this.imagen = imagenInput?.files?.[0] ?? this.imagen;
+    if (Object.keys(this.erroresValidacion()).length) {
+      this.changeDetector.detectChanges();
+      document.querySelector<HTMLElement>('.vacancy-form [aria-invalid="true"]')?.focus();
       return;
     }
-
-    const imagenSeleccionada = imagenInput?.files?.[0] ?? this.imagen;
+    this.guardando = true;
+    const imagenSeleccionada = this.imagen;
 
     const vacante = new FormData();
 
@@ -125,22 +188,23 @@ export class Vacantes {
     if (this.modoEdicion) {
       vacante.append('_method', 'PUT');
 
-      this.vacancyService.actualizarVacante(this.vacanteSeleccionada.id, vacante).subscribe(() => {
-        alert('vacante actualizada');
-        this.obtenerInformacion();
-        this.cerrarModal();
-        this.limpiarFormulario(imagenInput);
+      this.vacancyService.actualizarVacante(this.vacanteSeleccionada.id, vacante).subscribe({
+        next: () => {
+          alert('vacante actualizada');
+          this.obtenerInformacion();
+          this.cerrarModal();
+          this.limpiarFormulario(imagenInput);
+        },
+        error: (error) => this.errorGuardado(error),
       });
     } else {
-      if (!imagenSeleccionada) {
-        alert('Selecciona una imagen para la vacante.');
-        return;
-      }
-
-      this.vacancyService.guardarVacante(vacante).subscribe(() => {
-        alert('Vacante agregada');
-        this.obtenerInformacion();
-        this.limpiarFormulario(imagenInput);
+      this.vacancyService.guardarVacante(vacante).subscribe({
+        next: () => {
+          alert('Vacante agregada');
+          this.obtenerInformacion();
+          this.limpiarFormulario(imagenInput);
+        },
+        error: (error) => this.errorGuardado(error),
       });
     }
   }
@@ -156,6 +220,8 @@ export class Vacantes {
   }
 
   editarVacante(vacante: any) {
+    this.intentoGuardar = false;
+    this.erroresServidor = [];
     this.formularioAbierto = true;
     this.changeDetector.detectChanges();
     document.querySelector('.editor-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -175,6 +241,9 @@ export class Vacantes {
   }
 
   limpiarFormulario(imagenInput?: HTMLInputElement) {
+    this.intentoGuardar = false;
+    this.guardando = false;
+    this.erroresServidor = [];
     this.puesto = '';
     this.departamento = '';
     this.descripcion_breve = '';
