@@ -148,30 +148,30 @@
         <legend>Experiencia Laboral</legend>
 
         <label>Anos de experiencia:</label><br>
-        <input type="text" [(ngModel)]="tiempo_experiencia" name="anos_experiencia">
+        <input type="text" placeholder="Ej: 2 años, 6 meses, sin experiencia..." [(ngModel)]="tiempo_experiencia" name="anos_experiencia">
         <br><br>
 
         <div *ngFor="let exp of experiencias; let i = index">
             <h3>Trabajo {{ i + 1 }}</h3>
 
             <label>Empresa:</label><br>
-            <input type="text" [(ngModel)]="exp.empresa" [name]="'empresa' + i">
+            <input type="text" placeholder="Ej: Servicios Industriales del Centro, Comercial del Norte..." [(ngModel)]="exp.empresa" [name]="'empresa' + i">
             <br><br>
 
             <label>Puesto:</label><br>
-            <input type="text" [(ngModel)]="exp.puesto" [name]="'puestoEmpresa' + i">
+            <input type="text" placeholder="Ej: Auxiliar administrativo, técnico de mantenimiento..." [(ngModel)]="exp.puesto" [name]="'puestoEmpresa' + i">
             <br><br>
 
             <label>Periodo:</label><br>
-            <input type="text" [(ngModel)]="exp.periodo" [name]="'periodo' + i">
+            <input type="text" placeholder="Ej: Enero 2023 a marzo 2025, junio 2024 a la actualidad..." [(ngModel)]="exp.periodo" [name]="'periodo' + i">
             <br><br>
 
             <label>Actividades realizadas:</label><br>
-            <textarea [(ngModel)]="exp.responsabilidades" [name]="'responsabilidades' + i"></textarea>
+            <textarea placeholder="Ej: Atención a clientes, control de inventarios, elaboración de reportes..." [(ngModel)]="exp.responsabilidades" [name]="'responsabilidades' + i"></textarea>
             <br><br>
 
             <label>Motivo de salida:</label><br>
-            <textarea [(ngModel)]="exp.motivo_salida" [name]="'motivoSalida' + i"></textarea>
+            <textarea placeholder="Ej: Fin de contrato, crecimiento profesional, cambio de residencia..." [(ngModel)]="exp.motivo_salida" [name]="'motivoSalida' + i"></textarea>
             <br><br>
 
             <button class="option-remove" type="button" *ngIf="experiencias.length > 1" (click)="eliminarExperiencia(i)">
@@ -195,6 +195,7 @@
             <input
                 type="text"
                 inputmode="decimal"
+                placeholder="Ej: 15000.00"
                 [ngModel]="sueldo_actual"
                 (ngModelChange)="formatearSueldoActual($event)"
                 name="sueldo_actual">
