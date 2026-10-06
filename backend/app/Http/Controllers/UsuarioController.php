@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Usuario;
+use App\Rules\PersonalData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -19,15 +20,18 @@ class UsuarioController extends Controller
 
     public function store(Request $request)
     {
+        if (is_string($request->curp)) {
+            $request->merge(['curp' => strtoupper(trim($request->curp))]);
+        }
         $request->validate([
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
-            'correo' => 'required|email|unique:usuarios,correo',
+            'correo' => ['bail', 'required', 'string', new PersonalData('correo'), 'email', 'unique:usuarios,correo'],
             'password' => 'required|string|min:6',
-            'telefono' => 'required|string|max:255|unique:usuarios,telefono',
-            'curp' => 'required|string|max:255|unique:usuarios,curp',
+            'telefono' => ['bail', 'required', 'string', new PersonalData('telefono'), 'unique:usuarios,telefono'],
+            'curp' => ['bail', 'required', 'string', new PersonalData('curp'), 'unique:usuarios,curp'],
             'direccion' => 'required|string|max:255',
-            'fecha_nacimiento' => 'required|string|max:255',
+            'fecha_nacimiento' => ['bail', 'required', 'string', new PersonalData('fecha_nacimiento')],
             'datos_formulario' => 'nullable|array',
         ]);
 

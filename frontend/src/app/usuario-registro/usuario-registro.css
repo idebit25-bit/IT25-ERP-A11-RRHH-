@@ -76,6 +76,16 @@
     margin: 0;
 }
 
+.password-help, .password-error {
+    font-size: .85rem;
+    line-height: 1.5;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+}
+.password-help { color: #475467; }
+.password-error { color: #b00020; font-weight: 600; }
+.register-box input[aria-invalid="true"] { border-color: #b00020; }
+
 .notice {
     background: #eef5fb;
     border-left: 6px solid #0F2A44;

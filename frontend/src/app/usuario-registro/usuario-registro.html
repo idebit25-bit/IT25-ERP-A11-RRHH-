@@ -33,18 +33,30 @@
           type="email"
           placeholder="Ingrese su correo"
           name="correo"
-          [(ngModel)]="correo"
-          required>
+          [(ngModel)]="correo" personalField="correo" #correoControl="ngModel" autocomplete="email"
+          [attr.aria-invalid]="(correoControl.touched || datosFormulario) && correoControl.invalid ? 'true' : null" aria-describedby="usuario-registro-correo-error" required>
+        <small class="personal-error" id="usuario-registro-correo-error" role="alert" *ngIf="(correoControl.touched || datosFormulario) && correoControl.errors?.['personalData']">{{ correoControl.errors?.['personalData'] }}</small>
       </label>
 
       <label>
-        Contrasena
+        Crear contraseña (obligatoria)
         <input
           type="password"
-          placeholder="Minimo 6 caracteres"
+          placeholder="Escribe tu nueva contraseña"
           name="password"
+          #passwordControl="ngModel"
           [(ngModel)]="password"
+          minlength="6"
+          autocomplete="new-password"
+          aria-describedby="password-help password-error"
+          [attr.aria-invalid]="passwordControl.touched && passwordControl.invalid ? 'true' : null"
           required>
+        <small id="password-help" class="password-help">
+          Si aún no tienes cuenta, crea una contraseña de al menos 6 caracteres. La usarás para iniciar sesión. Este campo no se completa con los datos de tu solicitud.
+        </small>
+        <small id="password-error" class="password-error" role="alert" *ngIf="passwordControl.touched && passwordControl.invalid">
+          {{ passwordControl.errors?.['required'] ? 'Escribe una contraseña para crear tu cuenta.' : 'Tu contraseña debe tener al menos 6 caracteres.' }}
+        </small>
       </label>
 
       <label>
@@ -54,7 +66,8 @@
           placeholder="Ingrese su telefono"
           name="telefono"
           [(ngModel)]="telefono"
-          required>
+          required personalField="telefono" #telefonoControl="ngModel" [attr.aria-invalid]="(telefonoControl.touched || datosFormulario) && telefonoControl.invalid ? 'true' : null" aria-describedby="usuario-registro-telefono-error" inputmode="numeric" autocomplete="tel-national">
+<small class="personal-error" id="usuario-registro-telefono-error" role="alert" *ngIf="(telefonoControl.touched || datosFormulario) && telefonoControl.errors?.['personalData']">{{ telefonoControl.errors?.['personalData'] }}</small>
       </label>
 
       <label>
@@ -63,8 +76,9 @@
           type="text"
           placeholder="Ingrese su CURP"
           name="curp"
-          [(ngModel)]="curp"
-          required>
+          [ngModel]="curp" (ngModelChange)="curp = $event.toUpperCase()"
+          required personalField="curp" #curpControl="ngModel" [attr.aria-invalid]="(curpControl.touched || datosFormulario) && curpControl.invalid ? 'true' : null" aria-describedby="usuario-registro-curp-error">
+<small class="personal-error" id="usuario-registro-curp-error" role="alert" *ngIf="(curpControl.touched || datosFormulario) && curpControl.errors?.['personalData']">{{ curpControl.errors?.['personalData'] }}</small>
       </label>
 
       <label class="wide-field">
@@ -78,13 +92,14 @@
       </label>
 
       <label class="wide-field">
-        Fecha de nacimiento y edad
+        Fecha de nacimiento
         <input
           type="text"
-          placeholder="Ejemplo: 1990-01-01 36 anos"
+          placeholder="Ejemplo: 1990-01-01"
           name="fecha_nacimiento"
           [(ngModel)]="fecha_nacimiento"
-          required>
+          required personalField="fecha_nacimiento" #fecha_nacimientoControl="ngModel" [attr.aria-invalid]="(fecha_nacimientoControl.touched || datosFormulario) && fecha_nacimientoControl.invalid ? 'true' : null" aria-describedby="usuario-registro-fecha_nacimiento-error">
+<small class="personal-error" id="usuario-registro-fecha_nacimiento-error" role="alert" *ngIf="(fecha_nacimientoControl.touched || datosFormulario) && fecha_nacimientoControl.errors?.['personalData']">{{ fecha_nacimientoControl.errors?.['personalData'] }}</small>
       </label>
 
       <p class="error" *ngIf="error">{{ error }}</p>

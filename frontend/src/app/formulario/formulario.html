@@ -34,29 +34,33 @@
         <p class="field-limit" *ngIf="mostrarLimite(apellidoMaterno, 255)">{{ caracteresRestantes(apellidoMaterno, 255) }} caracteres disponibles.</p><br><br>
 
         <label>Telefono:</label><br>
-        <input type="tel" placeholder="Ingrese su numero de telefono" name="telefono" [(ngModel)]="telefono" required maxlength="255">
+        <input type="tel" placeholder="Ingrese su numero de telefono" name="telefono" [(ngModel)]="telefono" (ngModelChange)="limpiarErrorDato('telefono')" required personalField="telefono" #telefonoControl="ngModel" [attr.aria-invalid]="telefonoControl.touched && telefonoControl.invalid ? 'true' : null" aria-describedby="formulario-telefono-error" inputmode="numeric" autocomplete="tel-national">
+<small class="personal-error" id="formulario-telefono-error" role="alert" *ngIf="telefonoControl.touched && telefonoControl.errors?.['personalData'] && !formSubmitted">{{ telefonoControl.errors?.['personalData'] }}</small>
         <p class="field-error" *ngFor="let error of erroresDeCampo('telefono')">{{ error }}</p>
-        <p class="field-limit" *ngIf="mostrarLimite(telefono, 255)">{{ caracteresRestantes(telefono, 255) }} caracteres disponibles.</p><br><br>
+<br><br>
 
         <label>Correo electronico:</label><br>
-        <input type="email" placeholder="Ingrese su correo electronico" name="correo" [(ngModel)]="email" required maxlength="255">
+        <input type="email" placeholder="Ingrese su correo electronico" name="correo" [(ngModel)]="email" (ngModelChange)="limpiarErrorDato('correo')" required maxlength="254" personalField="correo" #correoControl="ngModel" autocomplete="email" [attr.aria-invalid]="correoControl.touched && correoControl.invalid ? 'true' : null" aria-describedby="formulario-correo-error">
+        <small class="personal-error" id="formulario-correo-error" role="alert" *ngIf="correoControl.touched && correoControl.errors?.['personalData'] && !formSubmitted">{{ correoControl.errors?.['personalData'] }}</small>
         <p class="field-error" *ngFor="let error of erroresDeCampo('correo')">{{ error }}</p>
         <p class="field-limit" *ngIf="mostrarLimite(email, 255)">{{ caracteresRestantes(email, 255) }} caracteres disponibles.</p><br><br>
 
         <label>CURP:</label><br>
-        <input type="text" placeholder="Ingrese su CURP" name="curp" [(ngModel)]="curp" required maxlength="255">
+        <input type="text" placeholder="Ingrese su CURP" name="curp" [ngModel]="curp" (ngModelChange)="curp = $event.toUpperCase(); limpiarErrorDato('curp')" required personalField="curp" #curpControl="ngModel" [attr.aria-invalid]="curpControl.touched && curpControl.invalid ? 'true' : null" aria-describedby="formulario-curp-error">
+<small class="personal-error" id="formulario-curp-error" role="alert" *ngIf="curpControl.touched && curpControl.errors?.['personalData'] && !formSubmitted">{{ curpControl.errors?.['personalData'] }}</small>
         <p class="field-error" *ngFor="let error of erroresDeCampo('curp')">{{ error }}</p>
-        <p class="field-limit" *ngIf="mostrarLimite(curp, 255)">{{ caracteresRestantes(curp, 255) }} caracteres disponibles.</p><br><br>
+<br><br>
 
         <label>Direccion:</label><br>
         <input type="text" placeholder="Ingrese su direccion" name="direccion" [(ngModel)]="direccion" required maxlength="255">
         <p class="field-error" *ngFor="let error of erroresDeCampo('direccion')">{{ error }}</p>
         <p class="field-limit" *ngIf="mostrarLimite(direccion, 255)">{{ caracteresRestantes(direccion, 255) }} caracteres disponibles.</p><br><br>
 
-        <label>Fecha de nacimiento y edad:</label><br>
-        <input type="text" placeholder="Ejemplo: 1990-01-01 36 anos" name="fecha_nacimiento" [(ngModel)]="fecha_nacimiento" required maxlength="255">
+        <label>Fecha de nacimiento:</label><br>
+        <input type="text" placeholder="Ejemplo: 1990-01-01" name="fecha_nacimiento" [(ngModel)]="fecha_nacimiento" (ngModelChange)="limpiarErrorDato('fecha_nacimiento')" required personalField="fecha_nacimiento" #fecha_nacimientoControl="ngModel" [attr.aria-invalid]="fecha_nacimientoControl.touched && fecha_nacimientoControl.invalid ? 'true' : null" aria-describedby="formulario-fecha_nacimiento-error">
+<small class="personal-error" id="formulario-fecha_nacimiento-error" role="alert" *ngIf="fecha_nacimientoControl.touched && fecha_nacimientoControl.errors?.['personalData'] && !formSubmitted">{{ fecha_nacimientoControl.errors?.['personalData'] }}</small>
         <p class="field-error" *ngFor="let error of erroresDeCampo('fecha_nacimiento')">{{ error }}</p>
-        <p class="field-limit" *ngIf="mostrarLimite(fecha_nacimiento, 255)">{{ caracteresRestantes(fecha_nacimiento, 255) }} caracteres disponibles.</p><br><br>
+<br><br>
 
         <label>Estado civil:</label><br>
         <input type="text" placeholder="Ingrese su estado civil" name="estado_civil" [(ngModel)]="estado_civil" required maxlength="255">

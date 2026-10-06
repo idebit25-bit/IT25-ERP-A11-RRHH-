@@ -15,6 +15,9 @@ h1, h2, h3, h4, p, label, legend { overflow-wrap: anywhere; }
 input, select, textarea { min-width: 0; max-width: 100%; }
 fieldset { min-inline-size: 0; }
 
+.personal-error { display: block; color: #b00020; font-size: .85rem; line-height: 1.5; margin-top: 6px; }
+input[personalField][aria-invalid="true"] { border-color: #b00020; }
+
 .vacancy-form .field-error { color: #b42318; font-size: .85rem; font-weight: 600; }
 .vacancy-form [aria-invalid="true"] { border-color: #b42318; }
 .vacancy-form .validation-summary { padding: 16px; border: 1px solid #b42318; border-radius: 8px; background: #fff1f0; color: #912018; }

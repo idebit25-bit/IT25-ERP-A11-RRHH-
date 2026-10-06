@@ -1,4 +1,5 @@
-import { afterNextRender, Component, inject } from '@angular/core';
+import { PersonalDataValidator, personalDataError } from '../shared/personal-data';
+import { afterNextRender, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -7,7 +8,7 @@ import { UserAccountService } from '../services/user-account';
 @Component({
   selector: 'app-usuario-registro',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [PersonalDataValidator, CommonModule, FormsModule, RouterLink],
   templateUrl: './usuario-registro.html',
   styleUrl: './usuario-registro.css',
 })
@@ -23,6 +24,7 @@ export class UsuarioRegistro {
   fecha_nacimiento = '';
   datosFormulario: any = null;
   error = '';
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   private readonly userAccountService =
     inject(UserAccountService);
@@ -32,7 +34,10 @@ export class UsuarioRegistro {
 
   constructor() {
     afterNextRender(() => {
-      this.cargarDatosPendientes();
+      queueMicrotask(() => {
+        this.cargarDatosPendientes();
+        this.changeDetector.markForCheck();
+      });
     });
   }
 
@@ -55,6 +60,16 @@ export class UsuarioRegistro {
 
   crearCuenta() {
     this.error = '';
+    this.curp = this.curp.trim().toUpperCase();
+    for (const field of ['correo', 'telefono', 'curp', 'fecha_nacimiento'] as const) {
+      const message = personalDataError(field, this[field]);
+      if (message) { this.error = message; return; }
+    }
+
+    if (!this.password.trim() || this.password.length < 6) {
+      this.error = 'Crea una contraseña de al menos 6 caracteres para registrar tu cuenta.';
+      return;
+    }
 
     this.userAccountService
       .crearCuenta({
@@ -92,6 +107,7 @@ export class UsuarioRegistro {
           this.error = primerError
             ? String(primerError)
             : 'No se pudo crear la cuenta. Revisa los datos.';
+          this.changeDetector.markForCheck();
         },
       });
   }

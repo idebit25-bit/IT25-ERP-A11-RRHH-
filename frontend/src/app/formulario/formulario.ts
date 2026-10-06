@@ -1,3 +1,4 @@
+import { PersonalDataValidator, personalDataError } from '../shared/personal-data';
 import { afterNextRender, ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -33,7 +34,7 @@ import { formatMoneyInput } from '../shared/money-format';
 @Component({
   selector: 'app-formulario',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [PersonalDataValidator, CommonModule, FormsModule],
   templateUrl: './formulario.html',
   styleUrl: './formulario.css',
 })
@@ -360,6 +361,7 @@ export class Formulario {
     cvFiles?: FileList | null,
     cartaFiles?: FileList | null
   ) {
+    this.curp = this.curp.trim().toUpperCase();
     this.formSubmitted = true;
     this.erroresPorCampo = {};
     this.erroresFormulario = [];
@@ -614,6 +616,13 @@ export class Formulario {
     const errores: string[] = [];
     this.erroresPorCampo = {};
 
+    for (const field of ['telefono', 'curp', 'fecha_nacimiento'] as const) {
+      if (!this.campoVacio(this[field])) {
+        const message = personalDataError(field, this[field]);
+        if (message) { errores.push(message); this.agregarErrorCampo(field, message); }
+      }
+    }
+
     const requeridos = [
       { valor: this.nombre, campo: 'Nombre(s)', seccion: 'Datos Personales', key: 'nombre' },
       { valor: this.apellidoPaterno, campo: 'Apellido paterno', seccion: 'Datos Personales', key: 'apellido_paterno' },
@@ -641,7 +650,7 @@ export class Formulario {
     });
 
     if (!this.campoVacio(this.email) && !this.correoValido(this.email)) {
-      const mensaje = 'El correo electronico no tiene un formato valido.';
+      const mensaje = personalDataError('correo', this.email);
       errores.push(`Datos Personales: ${mensaje}`);
       this.agregarErrorCampo('correo', mensaje);
     }
@@ -711,7 +720,20 @@ export class Formulario {
   }
 
   erroresDeCampo(campo: string) {
+    if (this.formSubmitted && campo === 'correo') {
+      const message = personalDataError('correo', this.email);
+      if (message) return [message];
+    }
+    if (this.formSubmitted && ['telefono', 'curp', 'fecha_nacimiento'].includes(campo)) {
+      const field = campo as 'telefono' | 'curp' | 'fecha_nacimiento';
+      const message = personalDataError(field, this[field]);
+      if (message) return [message];
+    }
     return this.erroresPorCampo[campo] || [];
+  }
+
+  limpiarErrorDato(campo: string) {
+    delete this.erroresPorCampo[campo];
   }
 
   tieneError(campo: string) {
@@ -775,7 +797,7 @@ export class Formulario {
   }
 
   correoValido(correo: string) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim());
+    return !personalDataError('correo', correo);
   }
 
   obtenerDatosFormulario() {

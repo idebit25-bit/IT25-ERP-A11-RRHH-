@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Applicants;
+use App\Rules\PersonalData;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,15 +26,18 @@ class ApplicantsController extends Controller
 
     public function store(Request $request)
     {
+        if (is_string($request->curp)) {
+            $request->merge(['curp' => strtoupper(trim($request->curp))]);
+        }
         $request->validate([
             'nombre' => 'required|string|max:255',
             'apellido_paterno' => 'required|string|max:255',
             'apellido_materno' => 'required|string|max:255',
-            'curp' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'telefono' => 'required|string|max:255',
+            'curp' => ['bail', 'required', 'string', new PersonalData('curp')],
+            'email' => ['bail', 'required', 'string', new PersonalData('correo'), 'email', 'max:254'],
+            'telefono' => ['bail', 'required', 'string', new PersonalData('telefono')],
             'direccion' => 'required|string|max:255',
-            'fecha_nacimiento' => 'required|string|max:255',
+            'fecha_nacimiento' => ['bail', 'required', 'string', new PersonalData('fecha_nacimiento')],
             'estado_civil' => 'required|string|max:255',
             'cv' => 'required|file|mimes:pdf,doc,docx|max:20480',
             'carta' => 'required|file|mimes:pdf,doc,docx|max:20480',
